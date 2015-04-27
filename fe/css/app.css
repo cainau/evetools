@@ -1,0 +1,26 @@
+body {
+  padding-top: 70px;
+}
+
+.vcenter {
+  display: inline-block;
+  vertical-align: middle;
+  float: none;
+}
+
+.row-padded {
+  padding: 5px;
+}
+
+.col-centered {
+    float: none;
+    margin: 0 auto;
+}
+
+a[ng-click] {
+    cursor: pointer;
+}
+
+tr[ng-click] {
+    cursor: pointer;
+}

@@ -1,0 +1,40 @@
+<div class="row row-padded">
+  <h2>Killboard</h2>
+  <table class="table table-hover text-nowrap">
+    <thead>
+      <tr>
+        <th>Date & Time</th>
+        <th>System</th>
+        <th></th>
+        <th>Victim</th>
+        <th></th>
+        <th>Ship</th>
+        <th></th>
+        <th>Final Blow</th>
+        <th># Attackers</th>
+        <th class="text-right">Value</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="kill in kills" class="{{ kill.loss_mail ? 'bg-danger' : '' }}" ng-click="navigate(kill.kill_id)">
+        <td>{{ kill.kill_time }}</td>
+        <td>{{ kill.solar_system_name }}<br><small>{{ kill.region_name }}</small></td>
+        <td><img ng-src="{{ kill.victim.image_32 }}"></td>
+        <td>{{ kill.victim.name }}<br><small>{{ kill.victim.group_name }}</small></td>
+        <td><img ng-src="https://image.eveonline.com/Render/{{ kill.victim.ship_type_id }}_32.png"></td>
+        <td>{{ kill.victim.ship_name }}<br><small>{{ kill.victim.ship_class }}</small></td>
+        <td><img ng-src="{{ kill.final_blow.image_32 }}"></td>
+        <td>{{ kill.final_blow.name }}<br><small>{{ kill.final_blow.group_name }}</small></td>
+        <td>{{ kill.num_attackers }}</td>
+        <td class="text-right">{{ kill.total_value }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="col-md-4 col-centered">
+    <ul class="pagination">
+      <li ng-class="(page==1)?'disabled':''"><a ng-click="setPage(page-1)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+      <li ng-repeat="p in pages" ng-class="(p==page)?'active':''"><a ng-click="setPage(p)">{{ p }}</a></li>
+      <li><a ng-click="setPage(page+1)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+    </ul>
+  </div>
+</div>

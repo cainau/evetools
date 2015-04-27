@@ -1,0 +1,32 @@
+<h2>Pending Payments</h2>
+<div class="row">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th>Payment</th>
+        <th></th>
+        <th>Character</th>
+        <th>Corporation</th>
+        <th class="text-right"># Losses</th>
+        <th class="text-right">Payment Amount</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="payment in payments" ng-click="navigate(payment.payment_id)">
+        <td>{{ payment.payment_id }}</td>
+        <td><img ng-src="https://image.eveonline.com/Character/{{ payment.character_id }}_32.jpg"></td>
+        <td><a href="/ofsoundsrp/#/character/{{ payment.character_id }}">{{ payment.character_name }}</a></td>
+        <td>{{ payment.corp_name }}</td>
+        <td class="text-right">{{ payment.losses.length }}</td>
+        <td class="text-right">{{ payment.payment_amount + 'M' }}</td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+<div class="col-md-4 col-centered">
+  <ul class="pagination">
+    <li ng-class="(page==1)?'disabled':''"><a ng-click="setPage(page-1)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+    <li ng-repeat="p in pages" ng-class="(p==page)?'active':''"><a ng-click="setPage(p)">{{ p }}</a></li>
+    <li><a ng-click="setPage(page+1)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+  </ul>
+</div>

@@ -1,0 +1,71 @@
+<div class="row row-padded">
+    <div class="col-md-2">
+        <img ng-src="https://image.eveonline.com/Character/{{ character.character_id }}_128.jpg">
+    </div>
+    <div class="col-md-2">
+        <img ng-src="https://image.eveonline.com/Corporation/{{ character.corp_id }}_128.png">
+    </div>
+    <div class="col-md-3">
+        <h2><a ng-href="http://evewho.com/pilot/{{ character.character_name }}">{{ character.character_name }}</a></h2>
+        <p>Corporation: <a ng-href="http://evewho.com/corp/{{ character.corp_name }}">{{ character.corp_name }}</a></p>
+    </div>
+</div>
+<h3>Losses:</h3>
+<div class="row">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <td>Kill #</td>
+                <td>Date</td>
+                <td>Ship Type</td>
+                <td>Ship Class</td>
+                <td>SRP Category</td>
+                <td class="text-right">SRP Amount</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-repeat="loss in losses" ng-click="navigateKill(loss.kill_id)">
+                <td>{{ loss.kill_id }}</td>
+                <td>{{ loss.kill_time }}</td>
+                <td><img ng-src="https://image.eveonline.com/Render/{{ loss.victim.ship_type_id }}_32.png"> {{ loss.victim.ship_name }}</td>
+                <td>{{ loss.victim.ship_class }}</td>
+                <td class="text-capitalize">{{ loss.loss_type }}</td>
+                <td class="text-right">{{ loss.srp_amount ? loss.srp_amount + 'M' : '' }}</td>
+            </tr>
+        </tbody>
+    </table>
+    <div class="col-md-4 col-centered">
+      <ul class="pagination">
+        <li ng-class="(killsPage==1)?'disabled':''"><a ng-click="setKillsPage(killsPage-1)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+        <li ng-repeat="p in killsPages" ng-class="(p==killsPage)?'active':''"><a ng-click="setKillsPage(p)">{{ p }}</a></li>
+        <li><a ng-click="setKillsPage(killsPage+1)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+      </ul>
+    </div>
+</div>
+<h3>Payments:</h3>
+<div class="row">
+    <table class="table">
+        <thead>
+            <tr>
+                <td>Payment #</td>
+                <td>Paid?</td>
+                <td>Date</td>
+                <td class="text-right">Amount</td>
+            </tr>
+        </thead>
+        <tbody>
+            <tr ng-if="current_payment">
+                <td><a href="/ofsoundsrp/#/payment/{{ current_payment.payment_id }}">{{ character.current_payment.payment_id }}</a></td>
+                <td>Not yet</td>
+                <td>{{ current_payment.paid_date }}</td>
+                <td class="text-right">{{ current_payment.payment_amount }}M</td>
+            </tr>
+            <tr ng-repeat="payment in payments">
+                <td><a href="/ofsoundsrp/#/payment/{{ payment.payment_id }}">{{ payment.payment_id }}</a></td>
+                <td>Yes</td>
+                <td>{{ payment.paid_date }}</td>
+                <td class="text-right">{{ payment.payment_amount }}M</td>
+            </tr>
+        </tbody>
+    </table>
+</div>

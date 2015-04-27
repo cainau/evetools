@@ -1,0 +1,47 @@
+<div class="row">
+    <div class="col-xs-10">
+        <h3>{{ tower.system_name }} {{ tower.location }} - {{ tower.pos_name }}</h3>
+        <h4>{{ tower.owner_name }} ({{ tower.corp_ticker }}) - {{ tower.pos_type_name }} - <span class="text-capitalize">{{ tower.status }}</span></h4>
+    </div>
+</div>
+<table class="table table-hover text-nowrap">
+    <thead>
+        <th></th>
+        <th>Silo</th>
+        <th></th>
+        <th>Content</th>
+        <th>Input / Output</th>
+        <th>Quantity (Capacity)</th>
+        <th>Hourly Change</th>
+        <th>Time Remaining</th>
+    </thead>
+    <tr ng-class="tower.fuel_class">
+    <td><img title="Fuel Bay" ng-src="//image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png"></td>
+    <td>Fuel Bay</td>
+    <td><img title="{{ tower.fuel_type_name }}" ng-src="//image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png"></td>
+    <td>{{ tower.fuel_type_name }}</td>
+    <td>Input</td>
+    <td>{{ tower.fuel_qty }}</td>
+    <td>-{{ tower.fuel_hourly_usage }}</td>
+    <td>{{ tower.fuel_time }}</td>
+</tr>
+<tr ng-class="tower.stront_class">
+    <td><img title="Stront Bay" ng-src="//image.eveonline.com/Type/16275_32.png"></td>
+    <td>Stront Bay</td>
+    <td><img title="Strontium Clathrates" ng-src="//image.eveonline.com/Type/16275_32.png"></td>
+    <td>Strontium Clathrates</td>
+    <td>Input</td>
+    <td>{{ tower.stront_qty }}</td>
+    <td>-{{ tower.stront_hourly_usage }}</td>
+    <td>{{ tower.stront_time }}</td>
+</tr>
+<tr ng-class="silo.silo_class" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
+    <td><img title="{{ silo.silo_type_name }}" ng-src="//image.eveonline.com/Type/{{ silo.silo_type_id }}_32.png"></td>
+    <td>{{ silo.silo_type_name }} <span ng-if="silo.name">({{ silo.name }})</span></td>
+    <td><img title="{{ silo.content_type_name }}" ng-src="//image.eveonline.com/Type/{{ silo.content_type_id }}_32.png"></td>
+    <td>{{ silo.content_type_name }}</td>
+    <td>{{ silo.input ? 'Input' : 'Output' }}</td>
+    <td>{{ silo.qty + ' / ' + round(silo.capacity / silo.content_size) }}</td>
+    <td>{{ silo.hourly_usage }}</td>
+    <td>{{ silo.silo_time }}</td>
+</tr>

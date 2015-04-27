@@ -1,0 +1,85 @@
+<div class="row">
+    <div class="btn-group" dropdown is-open="corpDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_corp.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="corp in corporations"><a ng-click="selectCorp($event, corp)">{{ corp.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown is-open="systemDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_system.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="system in systems"><a ng-click="selectSystem($event, system)">{{ system.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown is-open="ownerDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_owner.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="owner in owners"><a ng-click="selectOwner($event, owner)">{{ owner.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown>
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_sort.description }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li><a ng-click="sortByTime()">Sort By Time Remaining</a></li>
+            <li><a ng-click="sortByLocation()">Sort By Location</a></li>
+        </ul>
+    </div>
+</div>
+<table class="table">
+    <thead>
+        <tr>
+            <th>Corp</th>
+            <th>Location</th>
+            <th>POS Name</th>
+            <th>Owner</th>
+            <th>POS Type</th>
+            <th>Container</th>
+            <th>Type</th>
+            <th>Quantity</th>
+            <th>Time Remaining</th>
+        </tr>
+    </thead>
+    <tr class="{{ tower.tower_class }}" ng-repeat-start="tower in towers |orderBy:selected_sort.predicate">
+        <td>{{ tower.corp_ticker }}</td>
+        <td>{{ tower.system_name }} {{ tower.location }}</td>
+        <td ng-if="tower.status == 'online'">{{ tower.pos_name }}</td>
+        <td ng-if="tower.status != 'online'">{{ tower.pos_name }} ({{ tower.status }})</td>
+        <td>{{ tower.owner_name }}</td>
+        <td>{{ tower.pos_type_name }}</td>
+        <td class="{{ tower.fuel_class }}">Fuel Bay</td>
+        <td class="{{ tower.fuel_class }}">Fuel Blocks</td>
+        <td class="{{ tower.fuel_class }}">{{ tower.fuel_qty }}</td>
+        <td class="{{ tower.fuel_class }}">{{ tower.fuel_time }}</td>
+    </tr>
+    <tr class="{{ silo.silo_class }}" ng-repeat="silo in tower.silos">
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>{{ silo.silo_type_name }} - <span ng-if="silo.input">Input</span><span ng-if="!silo.input">Output</span></td>
+        <td>{{ silo.content_type_name }}</td>
+        <td>{{ silo.percent }}% ({{ silo.qty }})</td>
+        <td>{{ silo.silo_time }}</td>
+    </tr>
+    <tr class="{{ tower.stront_class }}" ng-repeat-end>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td></td>
+        <td>Stront Bay</td>
+        <td>Strontium Clathrates</td>
+        <td>{{ tower.stront_qty }}</td>
+        <td>{{ tower.stront_time }}</td>
+    </tr>
+</table>
+

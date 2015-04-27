@@ -1,0 +1,48 @@
+<div class="row">
+    <div class="btn-group" dropdown is-open="corpDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_corp.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="corp in corporations"><a ng-click="selectCorp($event, corp)">{{ corp.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown is-open="systemDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_system.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="system in systems"><a ng-click="selectSystem($event, system)">{{ system.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown is-open="ownerDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_owner.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="owner in owners"><a ng-click="selectOwner($event, owner)">{{ owner.name }}</a></li>
+        </ul>
+    </div>
+    <div class="btn-group" dropdown>
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_sort.description }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li><a ng-click="sortByTime()">Sort By Time Remaining</a></li>
+            <li><a ng-click="sortByLocation()">Sort By Location</a></li>
+        </ul>
+    </div>
+</div>
+<div class="row row-padded" ng-repeat="tower in towers |orderBy:selected_sort.predicate">
+    <h3><a href="/ofsoundposes/#/towers/{{ tower.pos_id }}">{{ tower.system_name }} {{ tower.location }} - {{ tower.pos_name }}</a></h3>
+    <h4>{{ tower.owner_name }} ({{ tower.corp_ticker }}) - {{ tower.pos_type_name }} - <span class="text-capitalize">{{ tower.status }}</span></h4>
+    <div class="col-sm-2 col-xs-4 {{ tower.fuel_class }}"><img title="{{ tower.fuel_type_name }}" ng-src="https://image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png"> {{ tower.fuel_volume }}km<sup>3</sup> <i class="fa fa-arrow-down"></i> {{ tower.fuel_time }}</div>
+    <div class="col-sm-2 col-xs-4 {{ silo.silo_class }}" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
+        <img title="{{ silo.content_type_name }}" ng-src="https://image.eveonline.com/Type/{{ silo.content_type_id }}_32.png"> <span ng-if="silo.volume">{{ silo.volume }}km<sup>3</sup></span> <i ng-if="silo.input" class="fa fa-arrow-down"></i><i ng-if="!silo.input" class="fa fa-arrow-up"></i> {{ silo.silo_time }}
+    </div>
+    <div class="col-xs-12">&nbsp;</div>
+    <div class="col-xs-12">Total volume to fill inputs: {{ tower.input_volume }}km<sup>3</sup></div>
+    <div class="col-xs-12">Total volume to clear outputs: {{ tower.output_volume }}km<sup>3</sup></div>
+    <div class="col-xs-12" ng-repeat="error in tower.errors">{{ error }}</div>
+</div>
+

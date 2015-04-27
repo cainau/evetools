@@ -1,0 +1,29 @@
+<div class="row row-padded">
+  <table class="table table-hover">
+    <thead>
+      <tr>
+        <th></th>
+        <th>Character</th>
+        <th></th>
+        <th>Corporation</th>
+        <th>Declines SRP?</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="character in characters |orderBy:'character_name'" ng-click="navigate(character.character_id)">
+        <td><img ng-src="https://image.eveonline.com/Character/{{ character.character_id }}_32.jpg"></td>
+        <td>{{ character.character_name }}</td>
+        <td><img ng-src="https://image.eveonline.com/Corporation/{{ character.corp_id }}_32.png"></td>
+        <td>{{ character.corp_name }}</td>
+        <td>{{ character.declined_srp ? 'Yes' : 'No' }}</td>
+      </tr>
+    </tbody>
+  </table>
+  <div class="col-md-4 col-centered">
+    <ul class="pagination">
+      <li ng-class="(page==1)?'disabled':''"><a ng-click="setPage(page-1)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+      <li ng-repeat="p in pages" ng-class="(p==page)?'active':''"><a ng-click="setPage(p)">{{ p }}</a></li>
+      <li><a ng-click="setPage(page+1)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+    </ul>
+  </div>
+</div>

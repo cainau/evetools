@@ -1,0 +1,41 @@
+    <h2>Payment #{{ payment.payment_id }} to <a href="/ofsoundsrp/#/character/{{ payment.character_id }}">{{ payment.character_name }}</a>
+    <small ng-if="payment.paid">(Paid {{ payment.paid_date }})</small>
+    <small ng-if="!payment.paid">(Not yet paid)</small>
+    </h2>
+    <div class="row">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Kill #</th>
+                    <th>Date</th>
+                    <th></th>
+                    <th>Ship Type</th>
+                    <th>Ship Class</th>
+                    <th>Loss Type</th>
+                    <th class="text-right">SRP Amount</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr ng-repeat="loss in payment.losses" ng-click="navigate(loss.kill_id)">
+                    <td>{{ loss.kill_id }}</td>
+                    <td>{{ loss.kill_time }}</td>
+                    <td><img ng-src="https://image.eveonline.com/Render/{{ loss.ship_type_id }}_32.png"></td>
+                    <td>{{ loss.ship_name }}</td>
+                    <td>{{ loss.ship_class }}</td>
+                    <td class="text-capitalize">{{ loss.loss_type }}</td>
+                    <td class="text-right">{{ loss.amount }}M</td>
+                </tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>Total:</td>
+                    <td class="text-right">{{ payment.payment_amount }}M</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>

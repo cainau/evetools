@@ -1,0 +1,123 @@
+    <div class="row">
+        <div class="col-md-2">
+            <img style="padding-top: 15px" ng-src="{{ kill.victim.image_128 }}">
+        </div>
+        <div class="col-md-3">
+            <h2><a href="/ofsoundsrp/#/character/{{ kill.victim.character_id }}">{{ kill.victim.name }}</a></h2>
+            <h4>{{ kill.victim.corporation_name }}</h4>
+            <h4>{{ kill.victim.alliance_name }}</h4>
+        </div>
+        <div class="col-md-2">
+            <img style="padding-top: 15px" ng-src="https://image.eveonline.com/Render/{{ kill.victim.ship_type_id }}_128.png">
+        </div>
+        <div class="col-md-5">
+            <h2>{{ kill.victim.ship_name }}</h2>
+            <h4>{{ kill.victim.ship_class }}</h4>
+            <h4>{{ kill.kill_time }}</h4>
+            <h4 class="text-capitalize">{{ kill.loss_type }} <span ng-if="kill.srp_amount">({{ kill.srp_amount }}M)</span></h4>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-5">
+            <h4>Attackers</h4>
+            <div class="row row-padded {{ attacker.final_blow ? 'bg-primary' : '' }}" ng-repeat="attacker in kill.attackers |orderBy:'damage_done':true">
+                <div class="col-xs-2 vcenter"><img ng-src="{{ attacker.image_64 }}"></div><!--
+             --><div class="col-xs-2 vcenter"><img ng-src="https://image.eveonline.com/Render/{{ attacker.ship_type_id }}_64.png"></div><!--
+             --><div class="col-sm-offset-1 col-xs-7 vcenter">
+                    {{ attacker.name }}<br>
+                    {{ attacker.corporation_name }}<br>
+                    {{ attacker.alliance_name }}<br>
+                    {{ attacker.ship_name }}<br>
+                    {{ attacker.weapon_name }}<br>
+                    {{ attacker.damage_done }} ({{ attacker.damage_done * 100 / kill.victim.damage_taken |number:2}}%)<br>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-5">
+            <h4 ng-if="kill.grouped_items.highs.length > 0">High Slots</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.highs">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.mids.length > 0">Med Slots</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.mids">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.lows.length > 0">Low Slots</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.lows">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.rigs.length > 0">Rig Slots</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.rigs">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.subsystems.length > 0">Subsystems</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.subsystems">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.cargo.length > 0">Cargo</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.cargo">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name + (slot.bpc ? ' (Copy)' : '') }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.fleet_hangar.length > 0">Fleet Hangar</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.fleet_hangar">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name + (slot.bpc ? ' (Copy)' : '') }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.specialized_hangar.length > 0">Specialized Hangar</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.specialized_hangar">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <h4 ng-if="kill.grouped_items.implants.length > 0">Implants</h4>
+            <div class="row {{ slot.qty_dropped > 0 ? 'bg-success' : '' }}" ng-repeat="slot in kill.grouped_items.implants">
+                <div class="col-xs-1 vcenter"><img ng-src="https://image.eveonline.com/Type/{{ slot.type_id }}_32.png"></div><!--
+             --><div class="col-xs-8 vcenter">{{ slot.type_name }}</div><!--
+             --><div class="col-xs-1 vcenter text-right">{{ slot.qty_dropped + slot.qty_destroyed }}</div><!--
+             --><div class="col-xs-2 vcenter text-right">{{ slot.value }}</div>
+            </div>
+            <br>
+            <div class="row">
+                <div class="col-xs-10">Hull Value:</div>
+                <div class="col-xs-2 text-right">{{ kill.hull_value }}</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-10">Dropped Value:</div>
+                <div class="col-xs-2 text-right">{{ kill.dropped_value }}</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-10">Destroyed Value:</div>
+                <div class="col-xs-2 text-right">{{ kill.destroyed_value }}</div>
+            </div>
+            <div class="row">
+                <div class="col-xs-10">Total Value:</div>
+                <div class="col-xs-2 text-right">{{ kill.total_value }}</div>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <h4>Related Links:</h4>
+            <a href="https://sound.zkillboard.com/kill/{{ kill.kill_id }}/">zKillboard</a><br>
+            <a href="http://kb.of-sound-mind.com/?a=kill_detail&kll_external_id={{ kill.kill_id }}">Eve Kill</a>
+        </div>
+    </div>
