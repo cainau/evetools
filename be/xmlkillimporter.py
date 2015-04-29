@@ -129,32 +129,42 @@ def convert_item(item):
     return i
 
 def import_kills():
+    look_back_days = int(_config.get_option('look_back_days'))
+    _log.info('Importing new killmails for the past %d days.' % look_back_days)
+    start_time = datetime.now() - timedelta(look_back_days)
     keys = get_api_keys()
     fixers = []
+    chars = set()
     for key in keys:
         _log.info('Getting latest killmails for key %s.' % key)
         key = get_api_key(key)
         corp = Corp(key)
         kills = corp.kills().result
-        kills = get_new_kills(kills)
-        kills = map(convert_killmail, kills)
-        _log.info('Importing %d kills.' % len(kills))
-        chars = set()
-        for kill in kills:
-            kill.save()
-            if kill.final_blow is None:
-                fixers.append(crest)
-            if kill.victim.character_id and kill.victim.character_id not in chars:
-                chars.add(kill.victim.character_id)
-                c = Character(kill.victim.character_id)
-                c.character_name = kill.victim.character_name
-                c.corp_id = kill.victim.corporation_id
-                c.corp_name = kill.victim.corporation_name
-                c.alliance_id = kill.victim.alliance_id
-                c.alliance_name = kill.victim.alliance_name
-                if c.declined_srp is None:
-                    c.declined_srp = False
-                c.save()
+        while kills != None:
+            minId = min(kills.keys())
+            minDate = datetime.utcfromtimestamp(kills[minId]['time'])
+            kills = get_new_kills(kills)
+            kills = map(convert_killmail, kills)
+            _log.info('Importing %d kills.' % len(kills))
+            for kill in kills:
+                kill.save()
+                if kill.final_blow is None:
+                    fixers.append(crest)
+                if kill.loss_mail and kill.victim.character_id and kill.victim.character_id not in chars:
+                    chars.add(kill.victim.character_id)
+                    c = Character(kill.victim.character_id)
+                    c.character_name = kill.victim.character_name
+                    c.corp_id = kill.victim.corporation_id
+                    c.corp_name = kill.victim.corporation_name
+                    c.alliance_id = kill.victim.alliance_id
+                    c.alliance_name = kill.victim.alliance_name
+                    if c.declined_srp is None:
+                        c.declined_srp = False
+                    c.save()
+            if minDate > start_time:
+                kills = corp.kills(before_kill = minId).result
+            else:
+                kills = None
     for km in fixers:
         crest.import_kill(km)
 
