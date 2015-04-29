@@ -101,6 +101,7 @@ def convert_killmail(kill):
     elif ship_class.market_reimbursement_multiplier > 0:
         price = market.get_default_price(km.victim.ship_type_id)
         km.default_payment = int(round(price * ship_class.market_reimbursement_multiplier, -6) / 1000000)
+    km.srpable = km.loss_mail and ship_class not in [ 'Capsule', 'Rookie Ship', 'Shuttle', 'Other' ]
     km.get_crest_hash()
     valuer.set_prices(km)
     return km

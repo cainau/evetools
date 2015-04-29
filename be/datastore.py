@@ -453,6 +453,8 @@ class KillMail(RootEntity):
         self.dropped_value = None
         self.destroyed_value = None
         self.total_value = None
+        self.srpable = None # Only means alliance & ship class are valid.
+        self.paid = None
         if kill_id is not None:
             self.load()
 
