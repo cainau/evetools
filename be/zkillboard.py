@@ -47,7 +47,7 @@ def get_kills(start_time):
         url = url_format % (alliance_id, start_time, page+1)
         content = web.fetch_url(url)
         kills = json.loads(content)
-        all_kills = itertools.chain(all_kills, kills)
+        all_kills = itertools.chain(all_kills, [kill for kill in kills if kill is not None])
         if len(kills) < 200:
             break
     bad = [kill for kill in all_kills if 'killID' not in kill]

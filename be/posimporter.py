@@ -11,10 +11,11 @@ import sys
 
 from config import ConfigSection
 from datastore import Corporation, Tower, Reactor, Reactant, Silo
+from eveapi import get_api_key
 from staticdata import InvType, InvGroup, InvTypeReaction, InvControlTowerResource, DgmAttributeTypes, DgmTypeAttributes, MapDenormalize
 
 one_hour = timedelta(hours = 1)
-_config = ConfigSection('eveapi')
+_config = ConfigSection('posimporter')
 _log = logging.getLogger('sound.posmon.be.main')
 
 def find(predicate, collection):
@@ -22,12 +23,6 @@ def find(predicate, collection):
     for idx, elem in enumerate(collection):
         if predicate(elem): return idx, elem
     return None, None
-
-def get_api_key(ticker):
-    key_config = ConfigSection('apikey:%s' % ticker)
-    key_id = int(key_config.get_option('key_id'))
-    v_code = key_config.get_option('v_code')
-    return API(api_key=(key_id, v_code), cache=SqliteCache(_config.get_option('cache_location')))
 
 def get_api_keys():
     api_keys = dict()
