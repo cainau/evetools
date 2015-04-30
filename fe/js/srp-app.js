@@ -32,6 +32,10 @@ srpApp.config(['$routeProvider',
         templateUrl: 'templates/payment.html',
         controller: 'PaymentController'
       }).
+      when('/admin', {
+        templateUrl: 'templates/srpadmin.html',
+        controller: 'AdminController'
+      }).
       otherwise({
         redirectTo: '/kills'
       });

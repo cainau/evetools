@@ -73,14 +73,8 @@ function processTower(tower) {
             silo.name = null;
         }
     });
-    if (tower.guns) {
-        tower.empty_guns = 0;
-        tower.guns.forEach(function(gun) {
-            if (gun.qty == 0) tower.empty_guns += 1;
-        });
-        if (tower.empty_guns > 0) {
-            tower.errors.push('Tower has ' + tower.empty_guns + ' guns without ammo.');
-        }
+    if (tower.empty_guns > 0) {
+        tower.errors.push('Tower has ' + tower.empty_guns + ' guns without ammo.');
     }
     tower.hours_remaining = minHours;
     tower.fuel_volume = tower.fuel_bay_capacity - tower.fuel_qty * 5;

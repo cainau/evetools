@@ -12,7 +12,7 @@ from datetime import datetime, timedelta
 from decimal import Decimal
 from google.appengine.ext import ndb
 from google.appengine._internal import simplejson as json
-from model import Configuration, Payment, Character, KillMail, Tower, PosOwner, Corporation
+from model import Configuration, Payment, Character, KillMail, LossMailAttributes, Tower, PosOwner, Corporation
 from webapp2_extras import routes, sessions
 
 DATE_FORMAT = '%Y-%m-%d %H:%M:%S'
@@ -22,20 +22,20 @@ JINJA_ENVIRONMENT = jinja2.Environment(
 
 _log = logging.getLogger('sound.main')
 
+def decimalize(o):
+    if isinstance(o, float):
+        return Decimal(o).quantize(Decimal('0.01'))
+    elif isinstance(o, list):
+        return [decimalize(i) for i in o]
+    elif isinstance(o, dict):
+        return dict((k,decimalize(v)) for k,v in o.iteritems())
+    else:
+        return o
+
 class JSONEncoder(json.JSONEncoder):
     def default(self, o):
         if isinstance(o, ndb.Model):
-            ds = o.to_dict()
-            def decimalize(o):
-                if isinstance(o, float):
-                    return Decimal(o).quantize(Decimal('0.01'))
-                elif isinstance(o, list):
-                    return [decimalize(i) for i in o]
-                elif isinstance(o, dict):
-                    return dict((k,decimalize(v)) for k,v in o.iteritems())
-                else:
-                    return o
-            return decimalize(ds)
+            return decimalize(o.to_dict())
         elif isinstance(o, datetime):
             return str(o)
         return o
@@ -97,7 +97,7 @@ class LoginHandler(BaseHandler):
             elif 'referer' in self.session:
                 return self.redirect(self.session['referer'])
             else:
-                return self.redirect_to('home')
+                return self.redirect_to('srp')
         if 'referer' not in self.session and 'Referer' in self.request.headers:
             self.session['referer'] = self.request.headers['Referer']
         elif 'referer' not in self.session:
@@ -115,7 +115,9 @@ class LogoutHandler(BaseHandler):
         del self.session['access_token_expires']
         del self.session['character_id']
         del self.session['character_name']
-        return self.redirect_to('home')
+        if 'Referer' in self.request.headers:
+            return self.redirect(self.request.headers['Referer'])
+        return self.redirect_to('srp')
 
 class EveSSOAuthHandler(BaseHandler):
     def get(self):
@@ -151,7 +153,7 @@ class EveSSOAuthHandler(BaseHandler):
                 return self.redirect(ref)
             else:
                 _log.info('Login successful, returning to home page.')
-                return self.redirect_to('home')
+                return self.redirect_to('srp')
         else:
             _log.warning('State did not match, redirecting back to login.')
             return self.redirect_to('login')
@@ -192,7 +194,9 @@ class IGBPayHandler(BaseHandler):
         payment.paid = True
         payment.paid_by = self.session['character_id']
         payment.paid_by_name = self.session['character_name']
-        payment.paid_date = datetime.now()
+        payment.paid_date = datetime.utcnow()
+        payment.modified_time = datetime.utcnow()
+        payment.modified_by = self.session['character_id']
         payment.put_async()
 
         loss_futures = [ (KillMail.query(KillMail.kill_id == loss.kill_id).get_async(), loss.amount)
@@ -200,6 +204,9 @@ class IGBPayHandler(BaseHandler):
         for future, amount in loss_futures:
             loss = future.get_result()
             loss.paid_amount = (loss.paid_amount or 0) + amount
+            loss.paid = loss.paid_amount == (loss.srp_amount or 0)
+            loss.modified_time = datetime.utcnow()
+            loss.modified_by = self.session['character_id']
             loss.put_async()
 
         self.redirect_to('igbpayments')
@@ -220,6 +227,9 @@ class JsonHandler(BaseHandler):
         else:
             data = query.map(mapper, offset=offset, limit=pageSize)
         self.write_json(data)
+
+    def read_json(self):
+        return json.loads(self.request.body, use_decimal=True)
 
 class ConfigHandler(JsonHandler):
     def get(self):
@@ -249,7 +259,12 @@ class KillsHandler(JsonHandler):
         if 'victim' in self.request.GET:
             cid = int(self.request.get('victim'))
             killmails = killmails.filter(KillMail.victim_id == cid)
-        killmails = killmails.order(-KillMail.kill_time)
+        if 'srpable' in self.request.GET:
+            killmails = killmails.filter(KillMail.srpable == True)
+            killmails = killmails.filter(KillMail.paid == False)
+            killmails = killmails.order(KillMail.kill_time, KillMail.kill_id)
+        else:
+            killmails = killmails.order(-KillMail.kill_time, -KillMail.kill_id)
         def mapper(kill):
             finalBlow = None
             try:
@@ -263,7 +278,9 @@ class KillsHandler(JsonHandler):
                 'solar_system_name': kill.solar_system_name,
                 'region_name': kill.region_name,
                 'loss_type': kill.loss_type,
+                'suggested_loss_type': kill.suggested_loss_type,
                 'srp_amount': kill.srp_amount,
+                'default_payment': kill.default_payment,
                 'victim': {
                     'character_id': kill.victim.character_id,
                     'character_name': kill.victim.character_name,
@@ -288,12 +305,36 @@ class KillsHandler(JsonHandler):
             }
         self.write_page(killmails, mapper)
 
+    def post(self):
+        if not self.logged_in:
+            self.session['referer'] = webapp2.uri_for('srp')
+            return self.redirect_to('login')
+        if not self.srp_admin:
+            return self.redirect_to('srp')
+        data = self.read_json()
+        kill_id = int(data['kill_id'])
+        # TODO: Figure out where the [None] is coming from this time.
+        km = KillMail.query(KillMail.kill_id == kill_id).get()
+        km.payments = [p for p in km.payments if p is not None]
+        km.loss_type = data['loss_type']
+        km.srp_amount = int(data['srp_amount'])
+        km.modified_time = datetime.utcnow()
+        km.modified_by = self.session['character_id']
+        km.put()
+
 class KillHandler(JsonHandler):
     def get(self, kill_id):
         _log.debug('Get kill %s' % kill_id)
+        lmaf = None
+        if 'loss_attributes' in self.request.GET:
+            lmaf = LossMailAttributes.get_by_id_async(int(kill_id))
         killmail = KillMail.query(KillMail.kill_id == int(kill_id)).get()
         if killmail is None:
             self.abort(404)
+        elif lmaf is not None:
+            data = decimalize(killmail.to_dict())
+            data['loss_attributes'] = lmaf.get_result().to_dict()
+            self.write_json(data)
         else:
             self.write_json(killmail)
 
@@ -406,14 +447,14 @@ class SearchHandler(JsonHandler):
 class TowersHandler(JsonHandler):
     def get(self):
         if not self.logged_in:
-            self.session['referer'] = webapp2.uri_for('json')
+            self.session['referer'] = webapp2.uri_for('posmon')
             return self.redirect_to('login')
         if self.session['alliance_id'] != self.config.alliance_id:
             _log.debug('Alliance: %s != %s' % (self.session['alliance_id'], self.config.alliance_id))
-            self.session['referer'] = webapp2.uri_for('json')
+            self.session['referer'] = webapp2.uri_for('posmon')
             return self.redirect_to('logout')
         corps = Corporation.query().fetch_async()
-        towers = Tower.query().fetch()
+        towers = Tower.query(Tower.deleted == False).fetch()
         corps = corps.get_result()
         if 'corp' in self.request.GET:
             corp = self.request.get('corp')
@@ -441,6 +482,13 @@ class TowersHandler(JsonHandler):
 
 class TowerHandler(JsonHandler):
     def get(self, tower_id):
+        if not self.logged_in:
+            self.session['referer'] = webapp2.uri_for('posmon')
+            return self.redirect_to('login')
+        if self.session['alliance_id'] != self.config.alliance_id:
+            _log.debug('Alliance: %s != %s' % (self.session['alliance_id'], self.config.alliance_id))
+            self.session['referer'] = webapp2.uri_for('posmon')
+            return self.redirect_to('logout')
         _log.debug('Get tower %s' % tower_id)
         tower = Tower.query(Tower.pos_id == int(tower_id)).get()
         if tower is None:
@@ -478,7 +526,7 @@ app = webapp2.WSGIApplication([
     # Public json handlers
     routes.PathPrefixRoute('/json', [
         webapp2.Route('/config', handler=ConfigHandler, name='jsonConfig'),
-        webapp2.Route('/kills', handler=KillsHandler, name='jsonKills'),
+        webapp2.Route('/kills', handler=KillsHandler, name='jsonKills', methods=['GET','POST']),
         webapp2.Route('/kills/<kill_id>', handler=KillHandler, name='jsonKill'),
         webapp2.Route('/characters', handler=CharactersHandler, name='jsonCharacters'),
         webapp2.Route('/characters/<character_id>', handler=CharacterHandler, name='jsonCharacter'),

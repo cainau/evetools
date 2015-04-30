@@ -1,0 +1,61 @@
+<div class="row row-padded">
+  <h2>Killboard</h2>
+  <table class="table table-hover text-nowrap">
+    <thead>
+      <tr>
+        <th>Date &amp; Time</th>
+        <th>System</th>
+        <th></th>
+        <th>Victim</th>
+        <th></th>
+        <th>Ship</th>
+        <th>Loss Type</th>
+        <th>SRP Amount</th>
+        <!--<th>Notes</th>-->
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr ng-repeat="kill in kills" class="{{ kill.processed ? 'bg-info' : '' }}">
+        <td ng-click="navigate(kill.kill_id)">{{ kill.kill_time }}</td>
+        <td ng-click="navigate(kill.kill_id)">{{ kill.solar_system_name }}<br><small>{{ kill.region_name }}</small></td>
+        <td ng-click="navigate(kill.kill_id)"><img ng-src="{{ kill.victim.image_32 }}"></td>
+        <td ng-click="navigate(kill.kill_id)">{{ kill.victim.name }}<br><small>{{ kill.victim.group_name }}</small></td>
+        <td ng-click="navigate(kill.kill_id)"><img ng-src="https://image.eveonline.com/Render/{{ kill.victim.ship_type_id }}_32.png"></td>
+        <td ng-click="navigate(kill.kill_id)">{{ kill.victim.ship_name }}<br><small>{{ kill.victim.ship_class }}</small></td>
+        <td>
+            <div class="btn-group" dropdown is-open="kill.is_open">
+                <button type="button" class="btn btn-primary btn-dropdown text-capitalize dropdown-toggle" dropdown-toggle>
+                    {{ kill.loss_type }} <span class="caret"></span>
+                </button>
+                <ul class="dropdown-menu" role="menu">
+                    <li><a ng-click="setLossType(kill, 'Awox')">Awox</a></li>
+                    <li><a ng-click="setLossType(kill, 'Bait')">Bait</a></li>
+                    <li><a ng-click="setLossType(kill, 'Cyno')">Cyno</a></li>
+                    <li><a ng-click="setLossType(kill, 'Fit')">Fit</a></li>
+                    <li><a ng-click="setLossType(kill, 'Fleet')">Fleet</a></li>
+                    <li><a ng-click="setLossType(kill, 'PVE')">PVE</a></li>
+                    <li><a ng-click="setLossType(kill, 'Solo')">Solo</a></li>
+                    <li><a ng-click="setLossType(kill, 'Stratop')">Stratop</a></li>
+                </ul>
+            </div>
+        </td>
+        <td>
+            <div class="input-group" style="width: 150px">
+                <input type="number" class="form-control text-right" ng-model="kill.srp_amount" aria-describedby="iskAddon"></input>
+                <span class="input-group-addon" id="iskAddon">M ISK</span>
+            </div>
+        </td>
+        <!--<td><span ng-if="kill.notes"><i class="fa fa-comments"></i></span></td>-->
+        <td><button type="button" class="btn btn-primary" ng-click="kill.save()">Save</button>
+      </tr>
+    </tbody>
+  </table>
+  <div class="col-md-4 col-centered">
+    <ul class="pagination">
+      <li ng-class="(page==1)?'disabled':''"><a ng-click="setPage(page-1)" aria-label="Previous"><span aria-hidden="true">&laquo;</span></a></li>
+      <li ng-repeat="p in pages" ng-class="(p==page)?'active':''"><a ng-click="setPage(p)">{{ p }}</a></li>
+      <li><a ng-click="setPage(page+1)" aria-label="Next"><span aria-hidden="true">&raquo;</span></a></li>
+    </ul>
+  </div>
+</div>

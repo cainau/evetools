@@ -24,3 +24,7 @@ a[ng-click] {
 tr[ng-click] {
     cursor: pointer;
 }
+
+.btn-dropdown {
+    width: 100px;
+}

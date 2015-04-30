@@ -120,6 +120,64 @@ srpControllers.controller('KillsController', ['$scope', '$routeParams', '$locati
   $scope.setPage(parseInt($routeParams.page || 1));
 }]);
 
+srpControllers.controller('AdminController', ['$scope', '$routeParams', '$location', 'Kill',
+        function ($scope, $routeParams, $location, Kill) {
+  if (!($scope.srp_admin)) {
+      $location.path('/kills');
+  }
+  $scope.setLossType = function(kill, loss_type) {
+      kill.loss_type = loss_type;
+      if (loss_type === 'Awox' || loss_type === 'Cyno' || loss_type === 'Fit' || loss_type === 'PVE') {
+          kill.srp_amount = 0;
+      } else if (loss_type === 'Solo' && kill.victim.ship_class !== 'Frigate' && kill.victim.ship_class !== 'Destroyer') {
+          kill.srp_amount = 0;
+      } else if (kill.default_payment <= 40 || kill.loss_type === 'Stratop' || kill.home_region) {
+          kill.srp_amount = kill.default_payment;
+      } else {
+          kill.srp_amount = 40;
+      }
+  };
+  $scope.setPage = function(page) {
+      $scope.page = page;
+      Kill.query({page: page, srpable: true}, function(kills) {
+          $scope.pages = [-2,-1,0,1,2].map(function(n) { return n + Math.max(3, page); });
+          kills.forEach(function(kill) {
+              Kill.get({killId: kill.kill_id, loss_attributes: true}, function(extra) {
+                  kill.home_region = extra.loss_attributes.home_region;
+              });
+              displayDetails($scope, kill.victim);
+              if (kill.loss_type) {
+                  kill.processed = true;
+              } else {
+                  kill.processed = false;
+                  kill.loss_type = kill.suggested_loss_type;
+              }
+              if (!kill.srp_amount) {
+                  $scope.setLossType(kill, kill.loss_type);
+              }
+              kill.is_open = false;
+              kill.save = function() {
+                  kill.$save(function(kill, putResponseHeaders) {
+                      kill.processed = true;
+                  });
+              };
+          });
+          $scope.kills = kills;
+      });
+  };
+  $scope.navigate = function(id) {
+    $location.path('/kill/' + id);
+  };
+  $scope.group = function(alliance_id, corp, alliance) {
+      if (!alliance_id || alliance_id === $scope.alliance_id) {
+          return corp;
+      } else {
+          return alliance;
+      }
+  };
+  $scope.setPage(parseInt($routeParams.page || 1));
+}]);
+
 srpControllers.controller('CharacterController', ['$scope', '$routeParams', '$location', 'Character', 'Kill', 'Payment',
         function ($scope, $routeParams, $location, Character, Kill, Payment) {
   $scope.setKillsPage = function(page) {
