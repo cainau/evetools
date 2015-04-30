@@ -2,6 +2,7 @@ import logging
 from datetime import datetime, timedelta
 from google.appengine.api.modules import get_current_version_name
 from google.appengine.ext import ndb
+from google.appengine.ext.ndb.model import _BaseValue
 
 _log = logging.getLogger('sound.model')
 
@@ -20,6 +21,23 @@ class LocalStructuredProperty(ndb.LocalStructuredProperty):
             return [v._to_dict() for v in value if v is not None]
         else:
             return value._to_dict()
+
+    def _deserialize(self, entity, p, unused_depth=1):
+        v = p.value()
+        val = self._db_get_value(v, p)
+        if val is not None:
+            val = _BaseValue(val)
+        if self._repeated:
+            if self._has_value(entity):
+                value = self._retrieve_value(entity)
+                assert isinstance(value, list), repr(value)
+                if val is not None:
+                    value.append(val)
+            else:
+                value = [] if val is None else [val]
+        else:
+            value = val
+        self._store_value(entity, value)
 
 class Configuration(ndb.Model):
     _CACHE_TIME = timedelta(minutes = 5)
@@ -152,6 +170,33 @@ class KillMail(ndb.Model):
     dropped_value = ndb.FloatProperty()
     destroyed_value = ndb.FloatProperty()
     total_value = ndb.FloatProperty()
+    srpable = ndb.BooleanProperty()
+    paid = ndb.BooleanProperty()
+    modified_time = ndb.DateTimeProperty()
+    modified_by = ndb.IntegerProperty()
+
+class LossMailAttributes(ndb.Model):
+    kill_id = ndb.IntegerProperty()
+    character_id = ndb.IntegerProperty()
+    ship_type_id = ndb.IntegerProperty()
+    ship_group_id = ndb.IntegerProperty()
+    region_name = ndb.StringProperty()
+    empty_low_slots = ndb.BooleanProperty()
+    empty_med_slots = ndb.BooleanProperty()
+    empty_rig_slots = ndb.BooleanProperty()
+    empty_hardpoints = ndb.BooleanProperty()
+    exploration_mods = ndb.BooleanProperty()
+    tackle_mods = ndb.BooleanProperty()
+    local_rep = ndb.BooleanProperty()
+    npcs_on_lossmail = ndb.BooleanProperty()
+    players_on_lossmail = ndb.BooleanProperty()
+    friendlies_on_lossmail = ndb.BooleanProperty()
+    friendly_bombers_on_lossmail = ndb.BooleanProperty()
+    recent_kills = ndb.BooleanProperty()
+    recent_friendly_kills_nearby = ndb.BooleanProperty()
+    recent_friendly_losses_nearby = ndb.BooleanProperty()
+    home_region = ndb.BooleanProperty()
+    cyno = ndb.BooleanProperty()
 
 class Payment(ndb.Model):
     payment_id = ndb.IntegerProperty()
@@ -167,6 +212,8 @@ class Payment(ndb.Model):
     paid_by_name = ndb.StringProperty()
     api_verified = ndb.BooleanProperty()
     api_amount = ndb.IntegerProperty()
+    modified_time = ndb.DateTimeProperty()
+    modified_by = ndb.IntegerProperty()
 
 class Silo(ndb.Model):
     silo_id = ndb.IntegerProperty()
@@ -229,6 +276,14 @@ class Tower(ndb.Model):
     fuel_bay_capacity = ndb.IntegerProperty()
     stront_bay_capacity = ndb.IntegerProperty()
     guns = LocalStructuredProperty(Silo, repeated = True)
+    deleted = ndb.BooleanProperty()
+
+    def to_dict(self):
+        ds = super(Tower, self).to_dict()
+        del ds['guns']
+        ds['guns'] = len(self.guns)
+        ds['empty_guns'] = len([ 1 for g in self.guns if g.qty == 0 ])
+        return ds
 
 class PosOwner(ndb.Model):
     location = ndb.StringProperty()
