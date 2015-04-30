@@ -11,7 +11,7 @@ import sys
 
 from config import ConfigSection
 from datastore import Corporation, Tower, Reactor, Reactant, Silo
-from eveapi import get_api_key
+from eveapi import get_api_key, get_key_config
 from staticdata import InvType, InvGroup, InvTypeReaction, InvControlTowerResource, DgmAttributeTypes, DgmTypeAttributes, MapDenormalize
 
 one_hour = timedelta(hours = 1)
@@ -30,22 +30,11 @@ def get_api_keys():
         api_keys[key] = get_api_key(key)
     return api_keys
 
-def get_corp_details(corp_api):
-    corp_sheet = corp_api.corporation_sheet().result
-    _log.debug('Getting corp details: %s' % corp_sheet['name'])
-    corp_id = corp_sheet['id']
-    corp_name = corp_sheet['name']
-    alliance_id = corp_sheet['alliance']['id']
-    corp_ticker = ''
+def get_corp_details(key_name):
+    _, _, corp_id = get_key_config(key_name)
     corp = Corporation(corp_id)
-    if corp.corp_name is None:
-        corp.corp_name = corp_name
-        corp.alliance_id = alliance_id
-        corp.alliance_name = corp_sheet['alliance']['name']
-        corp.save()
-    else:
-        corp_ticker = corp.corp_ticker
-    return alliance_id, corp_id, corp_name, corp_ticker
+    _log.info('Getting corp details: %s - %s' % (corp_id, corp.corp_name))
+    return corp.alliance_id, corp_id, corp.corp_name, corp.corp_ticker
 
 def get_sov_systems(alliance_id):
     _log.debug('Getting sov systems')
@@ -53,7 +42,7 @@ def get_sov_systems(alliance_id):
     return dict(filter(lambda (_,v): v['alliance_id'] == alliance_id, sov.iteritems()))
 
 def build_tower(starbase, detail, location_info, fuel_info, corp_id, corp_name, corp_ticker, sov):
-    _log.debug('Building tower: %d - %s at %s' % (starbase['id'], location_info['name'], starbase['moon_id']))
+    _log.info('Building tower: %d - %s at %s for %s' % (starbase['id'], location_info['name'], starbase['moon_id'], corp_name))
     moon_info = MapDenormalize.by_id(starbase['moon_id'])
     system_info = moon_info.solar_system
     tower = Tower(pos_id = starbase['id'])
@@ -75,6 +64,7 @@ def build_tower(starbase, detail, location_info, fuel_info, corp_id, corp_name, 
     tower.status = starbase['state']
     tower.fuel_bay_capacity = int(posType.capacity)
     tower.stront_bay_capacity = int(tower.fuel_bay_capacity / 2.8)
+    tower.deleted = False
 
     sov_bonus = 0.75 if sov.has_key(tower.system_id) else 1.0
     for fuel in fuel_info:
@@ -94,6 +84,25 @@ def build_tower(starbase, detail, location_info, fuel_info, corp_id, corp_name, 
 
     return tower
 
+def get_locations(corp, ids):
+    if not ids:
+        return
+    try:
+        r = corp.locations(ids).result
+        return r
+    except APIError as e:
+        if e.code == '135':
+            if len(ids) == 1:
+                logging.info('Strange location: %r' % ids[0])
+                return {}
+            else:
+                mid = len(ids) // 2
+                d = get_locations(corp, ids[:mid])
+                d.update(get_locations(corp, ids[mid:]))
+                return d
+        else:
+                raise
+
 def get_pos_modules(corp, assets):
     _log.debug('Getting POS modules')
     silos = map(lambda silo: silo.typeID, InvGroup.by_id(404).types.all() + InvGroup.by_id(707).types.all())
@@ -110,26 +119,8 @@ def get_pos_modules(corp, assets):
     assets = defaultdict(list)
     Location = namedtuple('Location', [ 'x', 'y', 'z' ])
     Module = namedtuple('Module', [ 'type', 'module', 'name', 'location' ])
-    def get_modules(ids):
-        if not ids:
-            return
-        try:
-            r = corp.locations(ids).result
-            return r
-        except APIError as e:
-            if e.code == '135':
-                if len(ids) == 1:
-                    logging.info('Strange location: %r' % ids[0])
-                    return {}
-                else:
-                    mid = len(ids) // 2
-                    d = get_modules(ids[:mid])
-                    d.update(get_modules(ids[mid:]))
-                    return d
-            else:
-                raise
     for chunk in range(0, len(module_ids), 100):
-        module_locations = get_modules(module_ids[chunk:chunk+100])
+        module_locations = get_locations(corp, module_ids[chunk:chunk+100])
         for id in module_ids[chunk:chunk+100]:
             if id not in module_locations:
                 continue
@@ -354,13 +345,14 @@ def link_reactors_with_silos(tower):
             else:
                 silo.hourly_usage = 0
 
-def process(api_key):
+def process(key_name, api_key):
+    _log.info('Importing towers for %s' % key_name)
     corp = Corp(api_key)
-    alliance_id, corp_id, corp_name, corp_ticker = get_corp_details(corp)
+    alliance_id, corp_id, corp_name, corp_ticker = get_corp_details(key_name)
     sov = get_sov_systems(alliance_id)
 
     starbases = corp.starbases().result.values()
-    starbase_locations = corp.locations(map(lambda t: t['id'], starbases)).result
+    starbase_locations = get_locations(corp, map(lambda t: t['id'], starbases))
     towers = defaultdict(list)
     _log.info('Building towers')
     for starbase in starbases:
@@ -394,11 +386,15 @@ def process(api_key):
 def full_import(keys):
     _log.info('Performing full import at %s' % datetime.utcnow())
     current_ids = set()
-    for key in keys:
-        current_ids.update(process(key))
-    old_towers = [t for t in Tower.all() if t.pos_id not in current_ids]
+    for key_name, key in keys.iteritems():
+        current_ids.update(process(key_name, key))
+    old_towers = []
+    for t in Tower.all():
+        if t.pos_id not in current_ids:
+            t.deleted = True
+            old_towers.append(t)
     _log.info('Removing %d old towers' % len(old_towers))
-    Tower.bulk_delete(old_towers)
+    Tower.bulk_save(old_towers)
 
 def quick_update():
     _log.info('Performing quick update at %s' % datetime.utcnow())
@@ -438,7 +434,7 @@ if __name__ == "__main__":
         quick_update()
     elif 'import' in sys.argv or datetime.utcnow().minute in [0, 30]:
         keys = get_api_keys()
-        full_import(keys.values())
+        full_import(keys)
     else:
         quick_update()
 

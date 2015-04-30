@@ -925,6 +925,7 @@ class Tower(RootEntity):
         self.fuel_bay_capacity = None
         self.stront_bay_capacity = None
         self.guns = []
+        self.deleted = False
         if pos_id is not None:
             self.load()
 

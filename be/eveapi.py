@@ -12,12 +12,15 @@ def get_key_config(key_name):
     key_config = ConfigSection('apikey:%s' % key_name)
     key_id = int(key_config.get_option('key_id'))
     v_code = key_config.get_option('v_code')
-    return key_id, v_code
+    entity_id = key_config.get_option('id')
+    if entity_id is not None:
+        entity_id = int(entity_id)
+    return key_id, v_code, entity_id
 
 def get_api_key(key):
     if isinstance(key, API):
         return key
-    key_id, v_code = get_key_config(key)
+    key_id, v_code, entity_id = get_key_config(key)
     return API(api_key=(key_id, v_code), cache=SqliteCache(_config.get_option('cache_location')))
 
 def get_characters(key):
