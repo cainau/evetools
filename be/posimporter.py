@@ -279,8 +279,12 @@ def update_guns(datastore, api):
             datastore.remove(gun)
 
 def advance_fuel_one_tick(tower):
-    if tower.status == 'reinforced':
+    if tower.status == 'reinforced' and tower.stront_qty < tower.stront_hourly_usage:
+        tower.status = 'online'
+    elif tower.status == 'reinforced':
         tower.stront_qty -= tower.stront_hourly_usage
+    elif tower.status == 'online' and tower.fuel_qty < tower.fuel_hourly_usage:
+        tower.status = 'anchored'
     elif tower.status == 'online':
         tower.fuel_qty -= tower.fuel_hourly_usage
 
