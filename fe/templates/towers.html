@@ -36,9 +36,26 @@
 <div class="row row-padded" ng-repeat="tower in towers |orderBy:selected_sort.predicate">
     <h3><a href="/ofsoundposes/#/towers/{{ tower.pos_id }}">{{ tower.system_name }} {{ tower.location }} - {{ tower.pos_name }}</a></h3>
     <h4>{{ tower.owner_name }} ({{ tower.corp_ticker }}) - {{ tower.pos_type_name }} - <span class="text-capitalize">{{ tower.status }}</span></h4>
-    <div class="col-sm-2 col-xs-4 {{ tower.fuel_class }}"><img title="{{ tower.fuel_type_name }}" ng-src="https://image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png"> {{ tower.fuel_volume }}km<sup>3</sup> <i class="fa fa-arrow-down"></i> {{ tower.fuel_time }}</div>
-    <div class="col-sm-2 col-xs-4 {{ silo.silo_class }}" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
-        <img title="{{ silo.content_type_name }}" ng-src="https://image.eveonline.com/Type/{{ silo.content_type_id }}_32.png"> <span ng-if="silo.volume">{{ silo.volume }}km<sup>3</sup></span> <i ng-if="silo.input" class="fa fa-arrow-down"></i><i ng-if="!silo.input" class="fa fa-arrow-up"></i> {{ silo.silo_time }}
+    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-6 {{ tower.fuel_class }}">
+        <img title="{{ tower.fuel_type_name }}" ng-src="https://image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png">
+        <div class="silo-numbers">
+            <span>Free: {{ tower.fuel_qty_free }} / {{ tower.fuel_volume_free }}km<sup>3</sup></span><br/>
+            <span>Filled: {{ tower.fuel_qty }} / {{ tower.fuel_volume_filled }}km<sup>3</sup></span><br/>
+        </div>
+        <meter class="vertical-meter" max="{{tower.fuel_bay_capacity}}" value="{{tower.fuel_volume_filled * 1000 }}"></meter>
+        <i class="fa fa-arrow-down"></i>
+        {{ tower.fuel_time }}
+    </div>
+    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-6 {{ silo.silo_class }}" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
+        <img title="{{ silo.content_type_name }}" ng-src="https://image.eveonline.com/Type/{{ silo.content_type_id }}_32.png">
+        <div class="silo-numbers">
+            <span>Free: {{ silo.qty_free }} / {{ silo.volume_free }}km<sup>3</sup></span><br/>
+            <span>Filled: {{ silo.qty }} / {{ silo.volume_filled }}km<sup>3</sup></span><br/>
+        </div>
+        <meter class="vertical-meter" max="{{silo.capacity}}" value="{{silo.volume_filled * 1000 }}"></meter>
+        <i ng-if="silo.input" class="fa fa-arrow-down"></i>
+        <i ng-if="!silo.input" class="fa fa-arrow-up"></i>
+        {{ silo.silo_time }}
     </div>
     <div class="col-xs-12">&nbsp;</div>
     <div class="col-xs-12">Total volume to fill inputs: {{ tower.input_volume }}km<sup>3</sup></div>

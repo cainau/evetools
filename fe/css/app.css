@@ -28,3 +28,17 @@ tr[ng-click] {
 .btn-dropdown {
     width: 100px;
 }
+
+.vertical-meter {
+    width: 30px;
+    height: 7px;
+    transform: rotate(-90deg);
+    margin-left: -5px;
+    margin-right: -5px;
+    vertical-align: middle;
+}
+
+.silo-numbers {
+    display: inline-block;
+    vertical-align: middle;
+}
