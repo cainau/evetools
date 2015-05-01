@@ -63,7 +63,7 @@ function processTower(tower) {
                 minHours = siloHours;
             }
             silo.qty_free = silo.capacity / silo.content_size - silo.qty;
-            silo.qty_free = Math.round(silo.qty_free);
+            silo.qty_free = Math.floor(silo.qty_free);
             silo.volume_filled = silo.qty * silo.content_size;
             silo.volume_free = silo.capacity - silo.volume_filled;
             silo.volume_filled = Math.round(silo.volume_filled / 100) / 10;

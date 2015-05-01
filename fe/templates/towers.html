@@ -36,7 +36,7 @@
 <div class="row row-padded" ng-repeat="tower in towers |orderBy:selected_sort.predicate">
     <h3><a href="/ofsoundposes/#/towers/{{ tower.pos_id }}">{{ tower.system_name }} {{ tower.location }} - {{ tower.pos_name }}</a></h3>
     <h4>{{ tower.owner_name }} ({{ tower.corp_ticker }}) - {{ tower.pos_type_name }} - <span class="text-capitalize">{{ tower.status }}</span></h4>
-    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-6 {{ tower.fuel_class }}">
+    <div class="col-md-4 col-xs-6 {{ tower.fuel_class }}">
         <img title="{{ tower.fuel_type_name }}" ng-src="https://image.eveonline.com/Type/{{ tower.fuel_type_id }}_32.png">
         <div class="silo-numbers">
             <span>Free: {{ tower.fuel_qty_free }} / {{ tower.fuel_volume_free }}km<sup>3</sup></span><br/>
@@ -46,7 +46,7 @@
         <i class="fa fa-arrow-down"></i>
         {{ tower.fuel_time }}
     </div>
-    <div class="col-lg-3 col-md-4 col-sm-5 col-xs-6 {{ silo.silo_class }}" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
+    <div class="col-md-4 col-xs-6 {{ silo.silo_class }}" ng-repeat="silo in tower.silos |orderBy:'content_type_name'">
         <img title="{{ silo.content_type_name }}" ng-src="https://image.eveonline.com/Type/{{ silo.content_type_id }}_32.png">
         <div class="silo-numbers">
             <span>Free: {{ silo.qty_free }} / {{ silo.volume_free }}km<sup>3</sup></span><br/>
