@@ -51,7 +51,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def session(self):
-        return self.session_store.get_session()
+        return self.session_store.get_session(backend='memcache')
 
     @webapp2.cached_property
     def logged_in(self):
@@ -314,7 +314,7 @@ class KillsHandler(JsonHandler):
         data = self.read_json()
         kill_id = int(data['kill_id'])
         # TODO: Figure out where the [None] is coming from this time.
-        km = KillMail.query(KillMail.kill_id == kill_id).get()
+        km = KillMail.get_by_id(kill_id)
         km.payments = [p for p in km.payments if p is not None]
         km.loss_type = data['loss_type']
         km.srp_amount = int(data['srp_amount'])
@@ -328,7 +328,7 @@ class KillHandler(JsonHandler):
         lmaf = None
         if 'loss_attributes' in self.request.GET:
             lmaf = LossMailAttributes.get_by_id_async(int(kill_id))
-        killmail = KillMail.query(KillMail.kill_id == int(kill_id)).get()
+        killmail = KillMail.get_by_id(int(kill_id))
         if killmail is None:
             self.abort(404)
         elif lmaf is not None:
@@ -381,13 +381,13 @@ class SearchHandler(JsonHandler):
         if search_text.isdigit():
             num = int(search_text)
             _log.debug('Search by ids: %d' % num)
-            futures.append(KillMail.query(KillMail.kill_id == num).get_async())
+            futures.append(KillMail.get_by_id_async(num))
             futures.append(Character.get_by_id_async(num))
             futures.append(Payment.get_by_id_async(num))
-            futures.append(Tower.query(Tower.pos_id == num).get_async())
+            futures.append(Tower.get_by_id_async(num))
         if search_text.startswith('K') and search_text[1:].isdigit():
             _log.debug('Search kill by id: %s' % search_text[1:])
-            futures.append(KillMail.query(KillMail.kill_id == int(search_text[1:])).get_async())
+            futures.append(KillMail.get_by_id_async(int(search_text[1:])))
         if search_text.startswith('C') and search_text[1:].isdigit():
             _log.debug('Search character by id: %s' % search_text[1:])
             futures.append(Character.get_by_id_async(int(search_text[1:])))
@@ -396,7 +396,7 @@ class SearchHandler(JsonHandler):
             futures.append(Payment.get_by_id_async(int(search_text[1:])))
         if search_text.startswith('T') and search_text[1:].isdigit():
             _log.debug('Search tower by id: %s' % search_text[1:])
-            futures.append(Tower.query(Tower.pos_id == int(search_text[1:])).get_async())
+            futures.append(Tower.get_by_id_async(Tower.pos_id == int(search_text[1:])))
         results = []
         for name, id in characters:
             if search_text in name:
@@ -490,7 +490,7 @@ class TowerHandler(JsonHandler):
             self.session['referer'] = webapp2.uri_for('posmon')
             return self.redirect_to('logout')
         _log.debug('Get tower %s' % tower_id)
-        tower = Tower.query(Tower.pos_id == int(tower_id)).get()
+        tower = Tower.get_by_id(int(tower_id))
         if tower is None:
             self.abort(404)
         else:

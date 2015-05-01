@@ -2,27 +2,19 @@ import logging
 from datetime import datetime, timedelta
 from google.appengine.api.modules import get_current_version_name
 from google.appengine.ext import ndb
-from google.appengine.ext.ndb.model import _BaseValue
 
 _log = logging.getLogger('sound.model')
 
 class LocalStructuredProperty(ndb.LocalStructuredProperty):
-    def _get_for_dict(self, entity):
-        value = self._get_value(entity)
-        if value is None:
-            return None
-        elif self._repeated:
-            # For some reason, value can be [None] when it should just be [].
-            # I've added the ' if is not None' part to the following line to
-            # avoid errors trying to call _to_dict() on None.
-            # Base implementation is at:
-            # https://code.google.com/p/googleappengine/source/browse/trunk/python/google/appengine/ext/ndb/model.py#2162
-            # TODO: Either investigate the root cause of the [None] or submit this workaround upstream.
-            return [v._to_dict() for v in value if v is not None]
-        else:
-            return value._to_dict()
-
+    # Base implementation is here:
+    # https://code.google.com/p/appengine-ndb-experiment/source/browse/ndb/model.py#1409
+    # This version has been modified to not put None values into the list for repeated fields.
+    # Previously repeated fields without any values would deserialize as [None] which caused
+    # errors down the line when trying to convert None to some entity type.
+    # Still need to investigate further to determine if this is the correct fix, or if we
+    # should not actually be getting to this point for empty lists.
     def _deserialize(self, entity, p, unused_depth=1):
+        from google.appengine.ext.ndb.model import _BaseValue
         v = p.value()
         val = self._db_get_value(v, p)
         if val is not None:
