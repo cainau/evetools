@@ -62,8 +62,13 @@ function processTower(tower) {
             if (siloHours < minHours) {
                 minHours = siloHours;
             }
-            silo.volume = silo.input ? silo.capacity - silo.qty * silo.content_size : silo.qty * silo.content_size;
-            silo.volume = Math.round(silo.volume / 100) / 10;
+            silo.qty_free = silo.capacity / silo.content_size - silo.qty;
+            silo.qty_free = Math.round(silo.qty_free);
+            silo.volume_filled = silo.qty * silo.content_size;
+            silo.volume_free = silo.capacity - silo.volume_filled;
+            silo.volume_filled = Math.round(silo.volume_filled / 100) / 10;
+            silo.volume_free = Math.round(silo.volume_free / 100) / 10;
+            silo.volume = silo.input ? silo.volume_free : silo.volume_filled;
             if (silo.input) tower.input_volume += silo.volume;
             else tower.output_volume += silo.volume;
         } else {
@@ -77,9 +82,13 @@ function processTower(tower) {
         tower.errors.push('Tower has ' + tower.empty_guns + ' guns without ammo.');
     }
     tower.hours_remaining = minHours;
-    tower.fuel_volume = tower.fuel_bay_capacity - tower.fuel_qty * 5;
-    tower.fuel_volume = Math.round(tower.fuel_volume / 100) / 10;
-    tower.input_volume += tower.fuel_volume;
+    tower.fuel_qty_free = tower.fuel_bay_capacity / 5 - tower.fuel_qty;
+    tower.fuel_volume_filled = tower.fuel_qty * 5;
+    tower.fuel_volume_free = tower.fuel_bay_capacity - tower.fuel_volume_filled;
+    tower.fuel_volume_filled = Math.round(tower.fuel_volume_filled / 100) / 10;
+    tower.fuel_volume_free = Math.round(tower.fuel_volume_free / 100) / 10;
+    tower.fuel_volume = tower.fuel_volume_free;
+    tower.input_volume += tower.fuel_volume_free;
     tower.input_volume = Math.round(tower.input_volume * 10) / 10;
 }
 
