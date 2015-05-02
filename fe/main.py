@@ -180,7 +180,7 @@ class IGBPaymentsHandler(BaseHandler):
         data['base_uri'] = self.config.base_uri
         data['character_id'] = self.session['character_id']
         data['character_name'] = self.session['character_name']
-        template = JINJA_ENVIRONMENT.get_template('igbpayments.htm')
+        template = JINJA_ENVIRONMENT.get_template('igbpayments.html')
         self.response.write(template.render(data))
 
 class IGBPayHandler(BaseHandler):
