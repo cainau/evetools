@@ -55,7 +55,7 @@ def build_tower(starbase, detail, location_info, fuel_info, corp_id, corp_name, 
     tower.constellation_id = system_info.constellationID
     tower.constellation_name = system_info.constellation.constellationName
     tower.region_id = system_info.regionID
-    tower.region_name = system_info.regionName
+    tower.region_name = system_info.region.regionName
     tower.planet = moon_info.celestialIndex
     tower.moon = moon_info.orbitIndex
     tower.x = location_info['x']
