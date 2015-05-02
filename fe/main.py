@@ -11,7 +11,7 @@ from collections import Mapping, Sequence
 from datetime import datetime, timedelta
 from decimal import Decimal
 from google.appengine.ext import ndb
-from google.appengine._internal import simplejson as json
+import simplejson as json
 from model import Configuration, Payment, Character, KillMail, LossMailAttributes, Tower, PosOwner, Corporation
 from webapp2_extras import routes, sessions
 
@@ -51,7 +51,7 @@ class BaseHandler(webapp2.RequestHandler):
 
     @webapp2.cached_property
     def session(self):
-        return self.session_store.get_session(backend='memcache')
+        return self.session_store.get_session()
 
     @webapp2.cached_property
     def logged_in(self):

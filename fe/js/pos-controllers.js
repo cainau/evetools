@@ -110,7 +110,9 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
       systemSet = {};
       ownerList = [];
       ownerSet = {};
-      $scope.towers = [];
+      regionList = [];
+      regionSet = {};
+      $scope.towers = []
       towers.forEach(function(tower) {
           processTower(tower);
           if (!corpSet[tower.corp_id]) {
@@ -124,6 +126,10 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
           if (!ownerSet[tower.owner_id]) {
               ownerSet[tower.owner_id] = true;
               ownerList.push({ 'id': tower.owner_id, 'name': tower.owner_name, 'type': tower.owner_type });
+          }
+          if (!regionSet[tower.region_id]) {
+              regionSet[tower.region_id] = true;
+              regionList.push({ 'id': tower.region_id, 'name': tower.region_name });
           }
           $scope.towers.push(tower);
       });
@@ -142,13 +148,16 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
           if (b.type === 'Corp') return 1;
           return 0;
       });
+      regionList.sort(byName);
       corpList.splice(0, 0, { 'id': 0, 'name': 'All Corporations', 'ticker': 'ALL' });
       systemList.splice(0, 0, { 'id': 0, 'name': 'All Systems' });
       ownerList.splice(0, 0, { 'id': 0, 'name': 'All Owners', 'type': 'All' });
+      regionList.splice(0, 0, { 'id': 0, 'name': 'All Regions' });
       $scope.all_towers = towers;
       $scope.corporations = corpList;
       $scope.systems = systemList;
       $scope.owners = ownerList;
+      $scope.regions = regionList;
       find = function(list, id) {
           res = list[0];
           if (id) {
@@ -162,19 +171,23 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
       $scope.selected_corp = find(corpList, $location.search().corp);
       $scope.selected_system = find(systemList, $location.search().system);
       $scope.selected_owner = find(ownerList, $location.search().owner);
+      $scope.selected_region = find(regionList, $location.search().region);
       selectTowers = function() {
           corp = $scope.selected_corp;
           system = $scope.selected_system;
           owner = $scope.selected_owner;
+          region = $scope.selected_region;
           $location.search({
               corp: corp.id === 0 ? null : corp.ticker,
               system: system.id === 0 ? null : system.name,
-              owner: owner.id === 0 ? null : owner.name
+              owner: owner.id === 0 ? null : owner.name,
+              region: region.id === 0 ? null : region.name
           });
           $scope.towers = $scope.all_towers.filter(function(tower) {
               return (corp.id == 0 || tower.corp_id == corp.id) &&
                   (system.id == 0 || tower.system_id == system.id) &&
-                  (owner.id == 0 || tower.owner_id == owner.id);
+                  (owner.id == 0 || tower.owner_id == owner.id) &&
+                  (region.id == 0 || tower.region_id == region.id);
           });
       };
       selectTowers();
@@ -193,10 +206,16 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
           $scope.ownerDropdownOpen = false;
           selectTowers();
       };
+      $scope.selectRegion = function($event, region) {
+          $scope.selected_region = region;
+          $scope.regionDropdownOpen = false;
+          selectTowers();
+      };
       $scope.$on('$routeUpdate', function() {
           $scope.selected_corp = find(corpList, $location.search().corp);
           $scope.selected_system = find(systemList, $location.search().system);
           $scope.selected_owner = find(ownerList, $location.search().owner);
+          $scope.selected_region = find(regionList, $location.search().region);
           selectTowers();
       });
       $scope.sortByTime = function() {

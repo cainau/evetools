@@ -7,6 +7,14 @@
             <li ng-repeat="corp in corporations"><a ng-click="selectCorp($event, corp)">{{ corp.name }}</a></li>
         </ul>
     </div>
+    <div class="btn-group" dropdown is-open="regionDropdownOpen">
+        <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
+            {{ selected_region.name }} <span class="caret"></span>
+        </button>
+        <ul class="dropdown-menu" role="menu">
+            <li ng-repeat="region in regions"><a ng-click="selectRegion($event, region)">{{ region.name }}</a></li>
+        </ul>
+    </div>
     <div class="btn-group" dropdown is-open="systemDropdownOpen">
         <button type="button" class="btn btn-primary dropdown-toggle" dropdown-toggle>
             {{ selected_system.name }} <span class="caret"></span>
