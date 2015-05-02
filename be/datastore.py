@@ -898,6 +898,10 @@ class Tower(RootEntity):
         self.pos_name = 'Unknown POS'
         self.system_id = None
         self.system_name = 'Unknown System'
+        self.constellation_id = None
+        self.constellation_name = None
+        self.region_id = None
+        self.region_name = None
         self.planet = None
         self.moon = None
         self.x = None
