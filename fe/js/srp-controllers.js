@@ -220,8 +220,8 @@ srpControllers.controller('CharactersController', ['$scope', '$routeParams', '$l
 srpControllers.controller('NavbarController', ['$scope', '$rootScope', '$location', 'Config', 'Search',
         function($scope, $rootScope, $location, Config, Search) {
   Config.get({}, function(config) {
-    $rootScope.alliance_id = config.alliance_id;
     $rootScope.logged_in = config.logged_in;
+    $rootScope.alliance_id = config.alliance_id;
     if (config.logged_in) {
       $rootScope.character_id = config.character_id;
       $rootScope.character_name = config.character_name;

@@ -43,3 +43,7 @@ tr[ng-click] {
     display: inline-block;
     vertical-align: middle;
 }
+
+[ng\:cloak], [ng-cloak], [data-ng-cloak], .ng-cloak, .x-ng-cloak {
+    display: none !important;
+}

@@ -236,8 +236,8 @@ posmonControllers.controller('TowersController', ['$scope', '$routeParams', '$lo
 posmonControllers.controller('NavbarController', ['$scope', '$rootScope', '$location', 'Config', 'Search',
         function($scope, $rootScope, $location, Config, Search) {
   Config.get({}, function(config) {
-    $rootScope.alliance_id = config.alliance_id;
     $rootScope.logged_in = config.logged_in;
+    $rootScope.alliance_id = config.alliance_id;
     if (config.logged_in) {
       console.log('Logged in as ' + config.character_name);
       $rootScope.character_id = config.character_id;
