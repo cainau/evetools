@@ -166,6 +166,7 @@ class KillMail(ndb.Model):
     paid = ndb.BooleanProperty()
     modified_time = ndb.DateTimeProperty()
     modified_by = ndb.IntegerProperty()
+    srp_checked = ndb.BooleanProperty()
 
 class LossMailAttributes(ndb.Model):
     kill_id = ndb.IntegerProperty()
@@ -206,6 +207,7 @@ class Payment(ndb.Model):
     api_amount = ndb.IntegerProperty()
     modified_time = ndb.DateTimeProperty()
     modified_by = ndb.IntegerProperty()
+    ignore = ndb.BooleanProperty()
 
 class Silo(ndb.Model):
     silo_id = ndb.IntegerProperty()
@@ -278,7 +280,6 @@ class Tower(ndb.Model):
         ds = super(Tower, self).to_dict()
         del ds['guns']
         ds['guns'] = len(self.guns)
-        ds['empty_guns'] = len([ 1 for g in self.guns if g.qty == 0 ])
         return ds
 
 class PosOwner(ndb.Model):

@@ -4,6 +4,7 @@ from evelink.account import Account
 from evelink.api import API
 from evelink.cache.sqlite import SqliteCache
 from evelink.char import Char
+from evelink.eve import EVE
 
 _config = ConfigSection('eveapi')
 _log = logging.getLogger('sound.srp.be.eveapi')
@@ -27,4 +28,24 @@ def get_characters(key):
     key = get_api_key(key)
     acc = Account(key)
     return acc.characters().result
+
+def update_character(character):
+    eve = EVE()
+    affiliations = eve.affiliations_for_character(character.character_id).result
+    updated = False
+    if character.corp_id != affiliations['corp']['id']:
+        character.corp_id = affiliations['corp']['id']
+        character.corp_name = affiliations['corp']['name']
+        updated = True
+    if 'alliance' not in affiliations:
+        updated = character.alliance_id != 0
+        character.alliance_id = 0
+        character.alliance_name = ''
+    elif ((not character.alliance_id and 'alliance' in affiliations) or
+        character.alliance_id != affiliations['alliance']['id']):
+        character.alliance_id = affiliations['alliance']['id']
+        character.alliance_name = affiliations['alliance']['name']
+        updated = True
+    if updated:
+        character.save()
 

@@ -1,8 +1,9 @@
 import logging
 import sys
 from config import ConfigSection
-from datastore import KillMail, Payment, PaymentDetail, Control
+from datastore import Character, Corporation, KillMail, Payment, PaymentDetail, Control
 from datetime import datetime, timedelta
+import eveapi
 
 _config = ConfigSection('paymentconsolidator')
 _log = logging.getLogger('sound.srp.be.paymentconsolidator')
@@ -66,6 +67,16 @@ def run():
                 control.save()
         else:
             process(kill, outstanding_payments[cid])
+    _log.info('Checking for out of alliance / declining SRP.')
+    alliance_id = int(_config.get_option('alliance_id'))
+    for cid, payment in outstanding_payments.iteritems():
+        c = Character(cid)
+        eveapi.update_character(c)
+        corp = Corporation(c.corp_id)
+        ignore = c.alliance_id != alliance_id or c.declined_srp or not corp.srp
+        if ignore != payment.ignore:
+            payment.ignore = ignore
+            payment.save()
 
 if __name__ == '__main__':
     run()

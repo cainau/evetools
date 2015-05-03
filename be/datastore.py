@@ -455,6 +455,7 @@ class KillMail(RootEntity):
         self.total_value = None
         self.srpable = None # Only means alliance & ship class are valid.
         self.paid = None
+        self.srp_checked = None
         if kill_id is not None:
             self.load()
 
@@ -757,6 +758,7 @@ class Payment(RootEntity):
         self.paid_by_name = None
         self.api_verified = False
         self.api_amount = None
+        self.ignore = None
         if payment_id is not None:
             self.load()
 
