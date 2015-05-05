@@ -95,7 +95,7 @@ def get_locations(corp, ids):
         r = corp.locations(ids).result
         return r
     except APIError as e:
-        if e.code == '135':
+        if e.code == '135' or e.code == '221':
             if len(ids) == 1:
                 logging.info('Strange location: %r' % ids[0])
                 return {}
@@ -394,15 +394,20 @@ def process(key_name, api_key):
 def full_import(keys):
     _log.info('Performing full import at %s' % datetime.utcnow())
     current_ids = set()
+    errors = False
     for key_name, key in keys.iteritems():
-        current_ids.update(process(key_name, key))
+        try:
+            current_ids.update(process(key_name, key))
+        except:
+            errors = True
     old_towers = []
     for t in Tower.all():
         if t.pos_id not in current_ids:
             t.deleted = True
             old_towers.append(t)
-    _log.info('Removing %d old towers' % len(old_towers))
-    Tower.bulk_save(old_towers)
+    if not errors:
+        _log.info('Removing %d old towers' % len(old_towers))
+        Tower.bulk_save(old_towers)
 
 def quick_update():
     _log.info('Performing quick update at %s' % datetime.utcnow())
