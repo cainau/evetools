@@ -65,7 +65,7 @@ def build_tower(starbase, detail, location_info, fuel_info, corp_id, corp_name, 
     tower.corp_name = corp_name
     tower.corp_ticker = corp_ticker
     tower.next_tick = datetime.utcfromtimestamp(detail['state_ts'])
-    tower.status = starbase['state']
+    tower.status = detail['state']
     tower.fuel_bay_capacity = int(posType.capacity)
     tower.stront_bay_capacity = int(tower.fuel_bay_capacity / 2.8)
     tower.deleted = False
