@@ -50,6 +50,7 @@ def get_kills(start_time):
         all_kills = itertools.chain(all_kills, [kill for kill in kills if kill is not None])
         if len(kills) < 200:
             break
+    all_kills = list(all_kills)
     bad = [kill for kill in all_kills if 'killID' not in kill]
     _log.debug('Some kills did not have kill ids: %s' % bad)
     all_kills = [kill for kill in all_kills if 'killID' in kill]
@@ -170,9 +171,10 @@ def import_kills():
     _log.info('Importing new killmails for the past %d days.' % look_back_days)
     start_time = (datetime.now() - timedelta(look_back_days)).strftime('%Y%m%d%H%M%S')
     kills = get_kills(start_time)
+    _log.debug('Checking %d kills.' % len(kills))
     kills = get_new_kills(kills)
-    kills = map(convert_killmail, kills)
     _log.info('Importing %d kills.' % len(kills))
+    kills = map(convert_killmail, kills)
     chars = set()
     for kill in kills:
         kill.save()
