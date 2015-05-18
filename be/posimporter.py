@@ -18,6 +18,8 @@ one_hour = timedelta(hours = 1)
 _config = ConfigSection('posimporter')
 _log = logging.getLogger('sound.posmon.be.main')
 
+multiplierAttribute = DgmAttributeTypes.by_name('moonMiningAmount')
+
 def find(predicate, collection):
     if not collection: return None, None
     for idx, elem in enumerate(collection):
@@ -187,16 +189,17 @@ def update_reactors(datastore, api):
         new.reactants = []
         for row in InvTypeReaction.by_reaction_id(reaction_type):
             item = InvType.by_id(row.typeID)
+            multiplier = multiplierAttribute.for_type_id(row.typeID) or 1
             reactant = Reactant()
             reactant.reactant_type_id = row.typeID
             reactant.reactant_type_name = item.typeName
-            reactant.reaction_qty = int(row.quantity * (-1 if row.input else 1))
+            reactant.reaction_qty = int(row.quantity * (-1 if row.input else 1) * multiplier)
             reactant.item_size = float(item.volume)
             new.reactants.append(reactant)
         updated.add(new.reactor_id)
         if not existing:
             datastore.append(new)
-        elif existing.reaction_type_id != reaction_type:
+        else:
             datastore[index] = new
     for reactor in datastore:
         if reactor.reactor_id not in updated:
